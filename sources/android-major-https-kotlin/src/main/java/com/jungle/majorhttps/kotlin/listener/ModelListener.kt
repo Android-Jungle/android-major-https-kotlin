@@ -42,21 +42,7 @@ interface ModelRequestListener<in T> {
 }
 
 
-open class ProxyModelListener<in T>(listener: ModelListener<T>) : ModelListener<T> {
-
-    private var mListener: ModelListener<T>? = listener
-
-    override fun onSuccess(networkResp: NetworkResp, response: T?) {
-        mListener?.onSuccess(networkResp, response)
-    }
-
-    override fun onError(errorCode: Int, message: String) {
-        mListener?.onError(errorCode, message)
-    }
-}
-
-
-class BothProxyModelListener<in T> : ModelListener<T> {
+open class ProxyModelListener<in T> : ModelListener<T> {
 
     private var mSuccessListener: ModelSuccessListener<T>? = null
     private var mErrorListener: ModelErrorListener? = null
