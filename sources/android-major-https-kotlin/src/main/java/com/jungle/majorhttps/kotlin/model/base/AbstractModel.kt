@@ -282,7 +282,7 @@ abstract class AbstractModel<Impl : AbstractModel<Impl, *, *>, Req : AbstractMod
 
     fun getErrorListener() = mErrorListener
 
-    fun getListener() = BothProxyModelListener(mSuccessListener, mErrorListener)
+    fun getListener() = ProxyModelListener(mSuccessListener, mErrorListener)
 
     protected fun doSuccess(networkResp: NetworkResp, response: Data?) {
         mSuccessListener?.invoke(networkResp, response)
