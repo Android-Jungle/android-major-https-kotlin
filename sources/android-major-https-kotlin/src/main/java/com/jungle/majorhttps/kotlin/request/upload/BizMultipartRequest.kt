@@ -2,15 +2,12 @@ package com.jungle.majorhttps.kotlin.request.upload
 
 import com.android.volley.AuthFailureError
 import com.android.volley.NetworkResponse
-import com.android.volley.Response
-import com.android.volley.toolbox.HttpHeaderParser
 import com.jungle.majorhttps.kotlin.request.base.BizBaseRequest
-import com.jungle.majorhttps.kotlin.request.base.BizMultipartResponse
 import com.jungle.majorhttps.kotlin.request.base.BizRequestListener
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 
-class BizMultipartRequest : BizBaseRequest<BizMultipartResponse> {
+class BizMultipartRequest : BizBaseRequest<String> {
 
     companion object {
 
@@ -24,7 +21,7 @@ class BizMultipartRequest : BizBaseRequest<BizMultipartResponse> {
     constructor(
             seqId: Int, method: Int, url: String?,
             items: List<MultipartFormItem>, headers: Map<String, String>,
-            listener: BizRequestListener<BizMultipartResponse>)
+            listener: BizRequestListener<String>)
             : super(seqId, method, url, null, headers, listener) {
 
         mFormItems = items
@@ -105,9 +102,7 @@ class BizMultipartRequest : BizBaseRequest<BizMultipartResponse> {
         return result
     }
 
-    override fun parseNetworkResponse(response: NetworkResponse): Response<BizMultipartResponse> {
-        return Response.success(
-                BizMultipartResponse(response, getResponseContent(response)),
-                HttpHeaderParser.parseCacheHeaders(response))
+    override fun parseResponseContent(response: NetworkResponse?): String? {
+        return super.parseResponseToStringContent(response)
     }
 }

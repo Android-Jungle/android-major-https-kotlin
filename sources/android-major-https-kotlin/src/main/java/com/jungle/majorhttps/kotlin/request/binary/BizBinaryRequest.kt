@@ -2,13 +2,10 @@ package com.jungle.majorhttps.kotlin.request.binary
 
 import com.android.volley.AuthFailureError
 import com.android.volley.NetworkResponse
-import com.android.volley.Response
-import com.android.volley.toolbox.HttpHeaderParser
 import com.jungle.majorhttps.kotlin.request.base.BizBaseRequest
-import com.jungle.majorhttps.kotlin.request.base.BizBinaryResponse
 import com.jungle.majorhttps.kotlin.request.base.BizRequestListener
 
-class BizBinaryRequest : BizBaseRequest<BizBinaryResponse> {
+class BizBinaryRequest : BizBaseRequest<ByteArray> {
 
     companion object {
 
@@ -23,7 +20,7 @@ class BizBinaryRequest : BizBaseRequest<BizBinaryResponse> {
     constructor(
             seqId: Int, method: Int, url: String?,
             params: Map<String, *>, headers: Map<String, String>, data: ByteArray,
-            listener: BizRequestListener<BizBinaryResponse>)
+            listener: BizRequestListener<ByteArray>)
             : super(seqId, method, url, params, headers, listener) {
 
         mData = data
@@ -34,10 +31,7 @@ class BizBinaryRequest : BizBaseRequest<BizBinaryResponse> {
     @Throws(AuthFailureError::class)
     override fun getBody() = if (mData != null) mData else super.getBody()
 
-    override fun parseNetworkResponse(response: NetworkResponse?): Response<BizBinaryResponse> {
-        val data = if (response != null && response.data != null) response.data else ByteArray(0)
-        return Response.success(
-                BizBinaryResponse(response, data),
-                HttpHeaderParser.parseCacheHeaders(response))
+    override fun parseResponseContent(response: NetworkResponse?): ByteArray? {
+        return response?.data
     }
 }

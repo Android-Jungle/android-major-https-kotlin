@@ -6,7 +6,10 @@ import com.jungle.majorhttps.kotlin.model.base.AbstractModel
 import com.jungle.majorhttps.kotlin.model.binary.DownloadFileRequestModel
 import com.jungle.majorhttps.kotlin.model.binary.UploadRequestModel
 import com.jungle.majorhttps.kotlin.network.CommonError
-import com.jungle.majorhttps.kotlin.request.base.*
+import com.jungle.majorhttps.kotlin.request.base.BizBaseRequest
+import com.jungle.majorhttps.kotlin.request.base.BizBaseResponse
+import com.jungle.majorhttps.kotlin.request.base.BizRequestListener
+import com.jungle.majorhttps.kotlin.request.base.ExtraHeadersFiller
 import com.jungle.majorhttps.kotlin.request.binary.BizBinaryRequest
 import com.jungle.majorhttps.kotlin.request.download.BizDownloadFileRequest
 import com.jungle.majorhttps.kotlin.request.download.BizDownloadRequest
@@ -193,7 +196,7 @@ class MajorHttpClient {
             request.setRetryPolicy(mDefaultRetryPolicy)
         }
 
-        if (request is BizBaseRequest) {
+        if (request is BizBaseRequest<*>) {
             if (modelRequest != null && modelRequest.isFillExtraHeader()) {
                 request.setExtraHeadersFiller(mExtraHeadersFiller)
             }
@@ -215,56 +218,57 @@ class MajorHttpClient {
 
     fun getRequestQueue() = mRequestQueue
 
-    private val mBizTextRequestListener = object : WrappedRequestListener<BizTextResponse>() {
+
+    private val mBizTextRequestListener = object : WrappedRequestListener<String>() {
 
         override fun handleSuccess(
                 seqId: Int,
-                listener: ModelRequestListener<BizTextResponse>,
-                response: BizBaseResponse<BizTextResponse>) {
+                listener: ModelRequestListener<String>,
+                response: BizBaseResponse<String>) {
 
             listener.onSuccess(seqId, response.mNetworkResp, response.mContent)
         }
     }
 
-    private val mBizBinaryRequestListener = object : WrappedRequestListener<BizBinaryResponse>() {
+    private val mBizBinaryRequestListener = object : WrappedRequestListener<ByteArray>() {
 
         override fun handleSuccess(
                 seqId: Int,
-                listener: ModelRequestListener<BizBinaryResponse>,
-                response: BizBaseResponse<BizBinaryResponse>) {
+                listener: ModelRequestListener<ByteArray>,
+                response: BizBaseResponse<ByteArray>) {
 
             listener.onSuccess(seqId, response.mNetworkResp, response.mContent)
         }
     }
 
-    private val mBizUploadRequestListener = object : WrappedRequestListener<BizMultipartResponse>() {
+    private val mBizUploadRequestListener = object : WrappedRequestListener<String>() {
 
         override fun handleSuccess(
                 seqId: Int,
-                listener: ModelRequestListener<BizMultipartResponse>,
-                response: BizBaseResponse<BizMultipartResponse>) {
+                listener: ModelRequestListener<String>,
+                response: BizBaseResponse<String>) {
 
             listener.onSuccess(seqId, response.mNetworkResp, response.mContent)
         }
     }
 
-    private val mBizDownloadRequestListener = object : WrappedRequestListener<BizDownloadResponse>() {
+    private val mBizDownloadRequestListener = object : WrappedRequestListener<ByteArray>() {
 
         override fun handleSuccess(
                 seqId: Int,
-                listener: ModelRequestListener<BizDownloadResponse>,
-                response: BizBaseResponse<BizDownloadResponse>) {
+                listener: ModelRequestListener<ByteArray>,
+                response: BizBaseResponse<ByteArray>) {
 
             listener.onSuccess(seqId, response.mNetworkResp, response.mContent)
         }
     }
 
-    private val mBizDownloadFileRequestListener = object : WrappedRequestListener<BizDownloadFileResponse>() {
+    private val mBizDownloadFileRequestListener = object : WrappedRequestListener<String>() {
 
         override fun handleSuccess(
                 seqId: Int,
-                listener: ModelRequestListener<BizDownloadFileResponse>,
-                response: BizBaseResponse<BizDownloadFileResponse>) {
+                listener: ModelRequestListener<String>,
+                response: BizBaseResponse<String>) {
 
             listener.onSuccess(seqId, response.mNetworkResp, response.mContent)
         }

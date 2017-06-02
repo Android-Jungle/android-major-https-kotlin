@@ -3,12 +3,13 @@ package com.jungle.majorhttps.kotlin.request.base
 import android.text.TextUtils
 import com.android.volley.NetworkResponse
 import com.android.volley.Request
+import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.HttpHeaderParser
 import java.net.URLEncoder
+import java.util.*
 
-
-open abstract class BizBaseRequest<T : BizBaseResponse<*>> : Request<T> {
+abstract class BizBaseRequest<T> : Request<BizBaseResponse<T>> {
 
     protected var mSeqId: Int = 0
     private var mRedirectUrl: String? = null
@@ -60,25 +61,40 @@ open abstract class BizBaseRequest<T : BizBaseResponse<*>> : Request<T> {
         return mRequestParams as MutableMap<String, String>
     }
 
-    override fun deliverResponse(response: T) {
-        mListener?.onSuccess(mSeqId, response)
+    override fun parseNetworkResponse(response: NetworkResponse?): Response<BizBaseResponse<T>> {
+        return Response.success(
+                createBizResponse(response),
+                HttpHeaderParser.parseCacheHeaders(response))
     }
 
-    override fun deliverError(error: VolleyError?) {
-        mListener?.onError(mSeqId, error)
+    protected fun createBizResponse(response: NetworkResponse?): BizBaseResponse<T> {
+        return BizBaseResponse<T>(response, parseResponseContent(response))
     }
 
-    protected fun getResponseContent(response: NetworkResponse?): String {
+    protected abstract fun parseResponseContent(response: NetworkResponse?): T?
+
+    protected fun parseResponseToStringContent(response: NetworkResponse?): String {
         var content: String = ""
         try {
             if (response != null && response.data != null) {
-                content = response.data.toString(HttpHeaderParser.parseCharset(response.headers))
+                // TODO: use charset: content = response.data.toString(charset)
+                //
+                val charset = HttpHeaderParser.parseCharset(response.headers)
+                content = response.data.toString()
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
         return content
+    }
+
+    override fun deliverResponse(response: BizBaseResponse<T>) {
+        mListener?.onSuccess(mSeqId, response)
+    }
+
+    override fun deliverError(error: VolleyError?) {
+        mListener?.onError(mSeqId, error)
     }
 
     protected fun redirectRequest() {

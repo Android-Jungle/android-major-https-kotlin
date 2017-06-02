@@ -4,34 +4,29 @@ import android.text.TextUtils
 import com.android.volley.NetworkResponse
 import com.android.volley.Response
 import com.android.volley.VolleyError
-import com.android.volley.toolbox.HttpHeaderParser
 import com.jungle.majorhttps.kotlin.request.base.BizBaseRequest
-import com.jungle.majorhttps.kotlin.request.base.BizDownloadFileResponse
-import com.jungle.majorhttps.kotlin.request.base.BizDownloadResponse
+import com.jungle.majorhttps.kotlin.request.base.BizBaseResponse
 import com.jungle.majorhttps.kotlin.request.base.BizRequestListener
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
-class BizDownloadRequest : BizBaseRequest<BizDownloadResponse> {
+class BizDownloadRequest : BizBaseRequest<ByteArray> {
 
     constructor(
             seqId: Int, method: Int, url: String?,
             params: Map<String, *>, headers: Map<String, String>,
-            listener: BizRequestListener<BizDownloadResponse>)
+            listener: BizRequestListener<ByteArray>)
             : super(seqId, method, url, params, headers, listener) {
     }
 
-    override fun parseNetworkResponse(response: NetworkResponse?): Response<BizDownloadResponse> {
-        val data = if (response != null && response.data != null) response.data else ByteArray(0)
-        return Response.success(
-                BizDownloadResponse(response, data),
-                HttpHeaderParser.parseCacheHeaders(response))
+    override fun parseResponseContent(response: NetworkResponse?): ByteArray? {
+        return response?.data
     }
 }
 
 
-class BizDownloadFileRequest : BizBaseRequest<BizDownloadFileResponse> {
+class BizDownloadFileRequest : BizBaseRequest<String> {
 
     private var mFilePath: String
 
@@ -39,13 +34,13 @@ class BizDownloadFileRequest : BizBaseRequest<BizDownloadFileResponse> {
     constructor(
             seqId: Int, method: Int, url: String?,
             params: Map<String, *>, headers: Map<String, String>, filePath: String,
-            listener: BizRequestListener<BizDownloadFileResponse>)
+            listener: BizRequestListener<String>)
             : super(seqId, method, url, params, headers, listener) {
 
         mFilePath = filePath
     }
 
-    override fun parseNetworkResponse(response: NetworkResponse?): Response<BizDownloadFileResponse> {
+    override fun parseNetworkResponse(response: NetworkResponse?): Response<BizBaseResponse<String>> {
         if (TextUtils.isEmpty(mFilePath)) {
             return Response.error(VolleyError("Download file path must not be null!"))
         }
@@ -81,8 +76,10 @@ class BizDownloadFileRequest : BizBaseRequest<BizDownloadFileResponse> {
             }
         }
 
-        return Response.success(
-                BizDownloadFileResponse(response, mFilePath),
-                HttpHeaderParser.parseCacheHeaders(response))
+        return super.parseNetworkResponse(response)
+    }
+
+    override fun parseResponseContent(response: NetworkResponse?): String? {
+        return mFilePath
     }
 }

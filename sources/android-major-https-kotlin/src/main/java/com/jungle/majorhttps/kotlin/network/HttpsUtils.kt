@@ -10,27 +10,28 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import javax.net.ssl.*
 
-class HttpsUtils {
+interface HttpsUtils {
+
+    open class DomainHostnameVerifier(domain: Array<out String>) : HostnameVerifier {
+
+        /**
+         * Verifier domain name, such as `biz.main.com`.
+         */
+        protected var mVerifyDomain = domain
+
+
+        override fun verify(hostname: String?, session: SSLSession?): Boolean {
+            val verifier = HttpsURLConnection.getDefaultHostnameVerifier()
+            return mVerifyDomain.any { verifier.verify(it, session) }
+        }
+    }
+
+    class DefaultHostnameVerifier : HostnameVerifier {
+        override fun verify(hostname: String?, session: SSLSession?) = true
+    }
+
 
     companion object {
-
-        open class DomainHostnameVerifier(domain: Array<String>) : HostnameVerifier {
-
-            /**
-             * Verifier domain name, such as `biz.main.com`.
-             */
-            protected var mVerifyDomain = domain
-
-
-            override fun verify(hostname: String?, session: SSLSession?): Boolean {
-                val verifier = HttpsURLConnection.getDefaultHostnameVerifier()
-                return mVerifyDomain.any { verifier.verify(it, session) }
-            }
-        }
-
-        class DefaultHostnameVerifier : HostnameVerifier {
-            override fun verify(hostname: String?, session: SSLSession?) = true
-        }
 
         /**
          * @param crtText Certificate file content.
@@ -85,7 +86,11 @@ class HttpsUtils {
         }
 
 
-        fun createTrustManagerByCerts(certs: Array<Certificate>): Array<TrustManager>? {
+        fun createTrustManagerByCerts(certs: Array<Certificate>?): Array<TrustManager>? {
+            if (certs == null) {
+                return null
+            }
+
             try {
                 val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
                 keyStore.load(null, null)
@@ -106,7 +111,11 @@ class HttpsUtils {
             return null
         }
 
-        fun getSSLContext(trustManagers: Array<TrustManager>): SSLContext? {
+        fun getSSLContext(trustManagers: Array<TrustManager>?): SSLContext? {
+            if (trustManagers == null) {
+                return null
+            }
+
             try {
                 val sslContext = SSLContext.getInstance("TLS")
                 sslContext.init(null, trustManagers, null)

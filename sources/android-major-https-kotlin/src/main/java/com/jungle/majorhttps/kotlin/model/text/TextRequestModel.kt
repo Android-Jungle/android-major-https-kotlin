@@ -9,7 +9,7 @@ import com.jungle.majorhttps.kotlin.model.base.AbstractModel
 import com.jungle.majorhttps.kotlin.network.CommonError
 import com.jungle.majorhttps.kotlin.request.base.NetworkResp
 
-open abstract class AbstractTextRequestModel<Impl : AbstractTextRequestModel<Impl, *>, Data>
+abstract class AbstractTextRequestModel<Impl : AbstractTextRequestModel<Impl, *>, Data>
     : AbstractModel<Impl, AbstractModel.Request, Data>()
         , ModelRequestListener<String> {
 
@@ -27,7 +27,7 @@ class TextRequestModel : AbstractTextRequestModel<TextRequestModel, String>() {
         fun newModel() = TextRequestModel()
     }
 
-    override fun onSuccess(seqId: Int, networkResp: NetworkResp, response: String) {
+    override fun onSuccess(seqId: Int, networkResp: NetworkResp, response: String?) {
         doSuccess(networkResp, response)
     }
 }
@@ -39,7 +39,7 @@ class JsonObjectRequestModel : AbstractTextRequestModel<JsonObjectRequestModel, 
         fun newModel() = JsonObjectRequestModel()
     }
 
-    override fun onSuccess(seqId: Int, networkResp: NetworkResp, response: String) {
+    override fun onSuccess(seqId: Int, networkResp: NetworkResp, response: String?) {
         try {
             val json = JSON.parseObject(response)
             doSuccess(networkResp, json)
@@ -57,7 +57,7 @@ class JsonArrayRequestModel : AbstractTextRequestModel<JsonArrayRequestModel, JS
         fun newModel() = JsonArrayRequestModel()
     }
 
-    override fun onSuccess(seqId: Int, networkResp: NetworkResp, response: String) {
+    override fun onSuccess(seqId: Int, networkResp: NetworkResp, response: String?) {
         try {
             val json = JSON.parseArray(response)
             doSuccess(networkResp, json)
@@ -79,7 +79,7 @@ open class JsonRequestModel<T>(val clazz: Class<T>)
 
     protected var mResponseClazz: Class<T> = clazz
 
-    override fun onSuccess(seqId: Int, networkResp: NetworkResp, response: String) {
+    override fun onSuccess(seqId: Int, networkResp: NetworkResp, response: String?) {
         if (TextUtils.isEmpty(response)) {
             doSuccess(networkResp, mResponseClazz.newInstance())
             return

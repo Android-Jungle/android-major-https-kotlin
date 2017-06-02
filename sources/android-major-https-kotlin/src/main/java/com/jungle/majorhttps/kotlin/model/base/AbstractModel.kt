@@ -147,8 +147,16 @@ abstract class AbstractModel<Impl : AbstractModel<Impl, *, *>, Req : AbstractMod
 
     @Suppress("UNCHECKED_CAST")
     fun listener(listener: ModelListener<Data>): Impl {
-        mSuccessListener = listener
-        mErrorListener = listener
+        mSuccessListener = {
+            networkResp, response ->
+            listener.onSuccess(networkResp, response)
+        }
+
+        mErrorListener = {
+            errorCode, message ->
+            listener.onError(errorCode, message)
+        }
+
         return this as Impl
     }
 
@@ -258,13 +266,13 @@ abstract class AbstractModel<Impl : AbstractModel<Impl, *, *>, Req : AbstractMod
 
     fun getListener() = BothProxyModelListener(mSuccessListener, mErrorListener)
 
-    protected fun doSuccess(networkResp: NetworkResp, response: Data) {
-        mSuccessListener?.onSuccess(networkResp, response)
+    protected fun doSuccess(networkResp: NetworkResp, response: Data?) {
+        mSuccessListener?.invoke(networkResp, response)
     }
 
     protected fun doError(errorCode: Int, message: String) {
         Log.e(TAG, "doError! errorCode=$errorCode, url=${mRequest.getUrl()}, message=[ $message ]")
-        mErrorListener?.onError(errorCode, message)
+        mErrorListener?.invoke(errorCode, message)
     }
 
     protected fun getHttpClient(): MajorHttpClient {

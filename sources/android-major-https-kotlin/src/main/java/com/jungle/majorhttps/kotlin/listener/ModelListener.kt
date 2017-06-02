@@ -3,16 +3,16 @@ package com.jungle.majorhttps.kotlin.listener
 import com.jungle.majorhttps.kotlin.model.base.AbstractModel
 import com.jungle.majorhttps.kotlin.request.base.NetworkResp
 
-interface ModelSuccessListener<in T> {
-    fun onSuccess(networkResp: NetworkResp, response: T)
-}
+typealias ModelSuccessListener<T> = (networkResp: NetworkResp, response: T?) -> Unit
+typealias ModelErrorListener = (errorCode: Int, message: String) -> Unit
 
-interface ModelErrorListener {
+
+interface ModelListener<in T> {
+
+    fun onSuccess(networkResp: NetworkResp, response: T?)
+
     fun onError(errorCode: Int, message: String)
 }
-
-
-interface ModelListener<in T> : ModelSuccessListener<T>, ModelErrorListener
 
 
 interface ModelLoadLifeListener<in T : AbstractModel<*, *, *>> {
@@ -22,7 +22,7 @@ interface ModelLoadLifeListener<in T : AbstractModel<*, *, *>> {
 
 interface ModelRequestListener<in T> {
 
-    fun onSuccess(seqId: Int, networkResp: NetworkResp, response: T);
+    fun onSuccess(seqId: Int, networkResp: NetworkResp, response: T?);
 
     fun onError(seqId: Int, errorCode: Int, message: String)
 }
@@ -32,7 +32,7 @@ open class ProxyModelListener<in T>(listener: ModelListener<T>) : ModelListener<
 
     private var mListener: ModelListener<T>? = listener
 
-    override fun onSuccess(networkResp: NetworkResp, response: T) {
+    override fun onSuccess(networkResp: NetworkResp, response: T?) {
         mListener?.onSuccess(networkResp, response)
     }
 
@@ -48,8 +48,15 @@ class BothProxyModelListener<in T> : ModelListener<T> {
     private var mErrorListener: ModelErrorListener? = null
 
     constructor(listener: ModelListener<T>?) {
-        mSuccessListener = listener
-        mErrorListener = listener
+        mSuccessListener = {
+            networkResp, response ->
+            listener?.onSuccess(networkResp, response)
+        }
+
+        mErrorListener = {
+            errorCode, message ->
+            listener?.onError(errorCode, message)
+        }
     }
 
     constructor(success: ModelSuccessListener<T>?, error: ModelErrorListener?) {
@@ -57,11 +64,11 @@ class BothProxyModelListener<in T> : ModelListener<T> {
         mErrorListener = error
     }
 
-    override fun onSuccess(networkResp: NetworkResp, response: T) {
-        mSuccessListener?.onSuccess(networkResp, response)
+    override fun onSuccess(networkResp: NetworkResp, response: T?) {
+        mSuccessListener?.invoke(networkResp, response)
     }
 
     override fun onError(errorCode: Int, message: String) {
-        mErrorListener?.onError(errorCode, message)
+        mErrorListener?.invoke(errorCode, message)
     }
 }

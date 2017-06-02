@@ -50,7 +50,7 @@ class MajorProgressLoadManager private constructor() {
         val listener = model.getListener()
         val seqId = model.load(object : ProxyModelListener<T>(listener) {
 
-            override fun onSuccess(networkResp: NetworkResp, response: T) {
+            override fun onSuccess(networkResp: NetworkResp, response: T?) {
                 hideLoading(model.getSeqId())
                 super.onSuccess(networkResp, response)
             }
