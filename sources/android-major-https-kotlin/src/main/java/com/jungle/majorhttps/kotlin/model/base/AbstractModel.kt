@@ -210,8 +210,8 @@ abstract class AbstractModel<Impl : AbstractModel<Impl, *, *>, Req : AbstractMod
 
     @Suppress("UNCHECKED_CAST")
     fun load(): Int {
-        mLoadLifeListener?.onBeforeLoad(this as Impl)
-        mModelFiller?.fill(mRequest)
+        mLoadLifeListener?.invoke(this as Impl)
+        mModelFiller?.invoke(mRequest)
 
         return loadInternal()
     }

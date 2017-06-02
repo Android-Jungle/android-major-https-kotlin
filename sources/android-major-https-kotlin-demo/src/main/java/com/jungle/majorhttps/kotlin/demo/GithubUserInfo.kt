@@ -1,5 +1,5 @@
 /**
- * Android Jungle-Major-Https-Kotlin framework project.
+ * Android Jungle-Major-Https-Kotlin demo framework project.
  *
  * Copyright 2017 Arno Zhang <zyfgood12@163.com>
  *
@@ -16,9 +16,21 @@
  * limitations under the License.
  */
 
-package com.jungle.majorhttps.kotlin.model.base
+package com.jungle.majorhttps.kotlin.demo
 
-interface ModelRequestFiller<in Req : AbstractModel.Request> {
+import java.util.*
 
-    fun fill(request: Req);
+class GithubUserInfo {
+
+    class Project {
+        var name: String? = null
+        var url: String? = null
+    }
+
+
+    var uid: String? = null
+    var userName: String? = null
+    var site: String? = null
+    var languages: Array<String> = arrayOf()
+    var projects: List<String> = ArrayList<String>()
 }

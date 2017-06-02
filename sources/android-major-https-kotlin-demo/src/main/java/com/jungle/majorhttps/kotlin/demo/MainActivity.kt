@@ -18,15 +18,26 @@
 
 package com.jungle.majorhttps.kotlin.demo
 
+import android.Manifest
 import android.content.Context
 import android.os.Bundle
+import android.os.Environment
+import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import com.alibaba.fastjson.JSON
+import com.alibaba.fastjson.serializer.SerializerFeature
+import com.jungle.majorhttps.kotlin.listener.ModelListener
 import com.jungle.majorhttps.kotlin.manager.MajorHttpClient
+import com.jungle.majorhttps.kotlin.model.binary.DownloadFileRequestModel
+import com.jungle.majorhttps.kotlin.model.binary.DownloadRequestModel
+import com.jungle.majorhttps.kotlin.model.binary.UploadRequestModel
+import com.jungle.majorhttps.kotlin.model.text.JsonRequestModel
 import com.jungle.majorhttps.kotlin.model.text.TextRequestModel
 import com.jungle.majorhttps.kotlin.network.HttpsUtils
+import com.jungle.majorhttps.kotlin.request.base.NetworkResp
 import com.jungle.majorhttps.kotlin.request.queue.HttpsRequestQueueFactory
 
 
@@ -70,5 +81,70 @@ class MainActivity : AppCompatActivity() {
                 .success { _, response -> TextViewerActivity.start(context, response) }
                 .error { errorCode, message -> showError(errorCode, message) }
                 .loadWithProgress(this)
+    }
+
+    fun onJsonModel(view: View) {
+        JsonRequestModel
+                .newModel(GithubUserInfo::class.java)
+                .url(DEMO_JSON_URL)
+                .error { errorCode, message -> showError(errorCode, message) }
+                .load { _, response ->
+                    var info = JSON.toJSONString(response, SerializerFeature.PrettyFormat)
+                    info = "Load Json object success!\n\n$info"
+                    TextViewerActivity.start(context, info)
+                }
+    }
+
+    fun onDownloadModel(view: View) {
+        DownloadRequestModel
+                .newModel()
+                .url(DEMO_JSON_URL)
+                .loadWithProgress(this, object : ModelListener<ByteArray> {
+                    override fun onSuccess(networkResp: NetworkResp, response: ByteArray?) {
+                        val content = String(response!!)
+                        TextViewerActivity.start(context, content)
+                    }
+
+                    override fun onError(errorCode: Int, message: String) {
+                        showError(errorCode, message)
+                    }
+                })
+    }
+
+    private fun getDemoFilePath(): String {
+        return Environment.getExternalStorageDirectory().path + "/demo.json"
+    }
+
+    fun onDownloadFileModel(view: View) {
+        val file = getDemoFilePath()
+        val loadingText = "Downloading File: \n$file"
+
+        DownloadFileRequestModel
+                .newModel()
+                .url(DEMO_JSON_URL)
+                .filePath(file)
+                .error { errorCode, message -> showError(errorCode, message) }
+                .lifeListener {
+                    ActivityCompat.requestPermissions(this@MainActivity,
+                            arrayOf<String>(Manifest.permission.WRITE_EXTERNAL_STORAGE), 100)
+                }
+                .loadWithProgress(context, loadingText, { _, _ ->
+                    Toast.makeText(context, "Download file SUCCESS! file = $file.",
+                            Toast.LENGTH_SHORT).show()
+                })
+    }
+
+    fun onUploadFileModel(view: View) {
+        val file = getDemoFilePath()
+
+        UploadRequestModel
+                .newModel()
+                .url(DEMO_UPLOAD_URL)
+                .addFormItem(file)
+                .error { errorCode, message -> showError(errorCode, message) }
+                .loadWithProgress(this, "Uploading...", { _, _ ->
+                    Toast.makeText(context, "Upload file SUCCESS! file = $file.",
+                            Toast.LENGTH_SHORT).show()
+                })
     }
 }

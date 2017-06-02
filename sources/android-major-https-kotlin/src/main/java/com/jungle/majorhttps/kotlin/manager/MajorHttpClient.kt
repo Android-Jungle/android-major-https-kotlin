@@ -319,6 +319,11 @@ class MajorHttpClient {
 
     @Synchronized
     private fun handleError(seqId: Int, error: VolleyError?) {
+        val node = mRequestList.remove(seqId)
+        if (node == null || node.mListener == null) {
+            return
+        }
 
+        node.mListener?.onError(seqId, CommonError.fromError(error), error.toString())
     }
 }

@@ -18,11 +18,12 @@
 
 package com.jungle.majorhttps.kotlin.listener
 
-import com.jungle.majorhttps.kotlin.model.base.AbstractModel
 import com.jungle.majorhttps.kotlin.request.base.NetworkResp
 
 typealias ModelSuccessListener<T> = (networkResp: NetworkResp, response: T?) -> Unit
 typealias ModelErrorListener = (errorCode: Int, message: String) -> Unit
+typealias ModelLoadLifeListener<T> = (model: T) -> Unit
+typealias ModelRequestFiller<T> = (request: T) -> Unit
 
 
 interface ModelListener<in T> {
@@ -30,11 +31,6 @@ interface ModelListener<in T> {
     fun onSuccess(networkResp: NetworkResp, response: T?)
 
     fun onError(errorCode: Int, message: String)
-}
-
-
-interface ModelLoadLifeListener<in T : AbstractModel<*, *, *>> {
-    fun onBeforeLoad(model: T)
 }
 
 
