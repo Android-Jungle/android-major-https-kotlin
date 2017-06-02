@@ -95,10 +95,10 @@ abstract class BizBaseRequest<T> : Request<BizBaseResponse<T>> {
         var content: String = ""
         try {
             if (response != null && response.data != null) {
-                // TODO: use charset: content = response.data.toString(charset)
+                // TODO: use charset: content = String(charset)
                 //
                 val charset = HttpHeaderParser.parseCharset(response.headers)
-                content = response.data.toString()
+                content = String(response.data)
             }
         } catch (e: Exception) {
             e.printStackTrace()
