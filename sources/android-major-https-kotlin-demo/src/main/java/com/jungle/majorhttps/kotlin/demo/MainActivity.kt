@@ -40,7 +40,6 @@ import com.jungle.majorhttps.kotlin.network.HttpsUtils
 import com.jungle.majorhttps.kotlin.request.base.NetworkResp
 import com.jungle.majorhttps.kotlin.request.queue.HttpsRequestQueueFactory
 
-
 class MainActivity : AppCompatActivity() {
 
     companion object {
@@ -69,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         MajorHttpClient.getDefault().setRequestQueueFactory(factory)
     }
 
-    private fun showError(errorCode: Int, message: String) {
+    private var showError = { errorCode: Int, message: String ->
         val detail = "Error: errorCode = $errorCode, message = $message."
         Log.e("Main", detail)
         Toast.makeText(this, detail, Toast.LENGTH_LONG).show()
@@ -80,7 +79,7 @@ class MainActivity : AppCompatActivity() {
                 .newModel()
                 .url(DEMO_WEB_URL)
                 .success { _, response -> TextViewerActivity.start(context, response) }
-                .error { errorCode, message -> showError(errorCode, message) }
+                .error(showError)
                 .loadWithProgress(this)
     }
 
@@ -88,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         JsonRequestModel
                 .newModel(GithubUserInfo::class.java)
                 .url(DEMO_JSON_URL)
-                .error { errorCode, message -> showError(errorCode, message) }
+                .error(showError)
                 .load { _, response ->
                     var info = JSON.toJSONString(response, SerializerFeature.PrettyFormat)
                     info = "Load Json object success!\n\n$info"
@@ -124,7 +123,7 @@ class MainActivity : AppCompatActivity() {
                 .newModel()
                 .url(DEMO_JSON_URL)
                 .filePath(file)
-                .error { errorCode, message -> showError(errorCode, message) }
+                .error(showError)
                 .beforeStart {
                     ActivityCompat.requestPermissions(this@MainActivity,
                             arrayOf<String>(Manifest.permission.WRITE_EXTERNAL_STORAGE), 100)
@@ -142,7 +141,7 @@ class MainActivity : AppCompatActivity() {
                 .newModel()
                 .url(DEMO_UPLOAD_URL)
                 .addFormItem(file)
-                .error { errorCode, message -> showError(errorCode, message) }
+                .error(showError)
                 .loadWithProgress(this, "Uploading...", { _, _ ->
                     Toast.makeText(context, "Upload file SUCCESS! file = $file.",
                             Toast.LENGTH_SHORT).show()
