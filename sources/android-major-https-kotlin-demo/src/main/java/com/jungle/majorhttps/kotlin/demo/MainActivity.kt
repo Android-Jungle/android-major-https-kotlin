@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         private val DEMO_UPLOAD_URL = "https://raw.githubusercontent.com/upload_test"
     }
 
+
     private val context: Context
         get() = this
 
@@ -124,7 +125,7 @@ class MainActivity : AppCompatActivity() {
                 .url(DEMO_JSON_URL)
                 .filePath(file)
                 .error { errorCode, message -> showError(errorCode, message) }
-                .lifeListener {
+                .beforeStart {
                     ActivityCompat.requestPermissions(this@MainActivity,
                             arrayOf<String>(Manifest.permission.WRITE_EXTERNAL_STORAGE), 100)
                 }

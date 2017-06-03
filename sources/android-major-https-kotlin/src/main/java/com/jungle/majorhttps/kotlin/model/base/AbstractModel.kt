@@ -112,7 +112,8 @@ abstract class AbstractModel<Impl : AbstractModel<Impl, *, *>, Req : AbstractMod
     protected var mRequest: Req = createRequest()
     protected var mErrorListener: ModelErrorListener? = null
     protected var mSuccessListener: ModelSuccessListener<Data>? = null
-    protected var mLoadLifeListener: ModelLoadLifeListener<Impl>? = null
+    protected var mBeforeStartListener: ModelBeforeStartListener<Impl>? = null
+    protected var mBeforeSuccessListener: ModelBeforeSuccessListener<Impl, Data>? = null
     protected var mModelFiller: ModelRequestFiller<Req>? = null
     protected var mHttpClient: MajorHttpClient? = null
 
@@ -122,48 +123,45 @@ abstract class AbstractModel<Impl : AbstractModel<Impl, *, *>, Req : AbstractMod
     }
 
     @Suppress("UNCHECKED_CAST")
+    protected fun asImpl(): Impl {
+        return asImpl()
+    }
+
     fun url(url: String): Impl {
         mRequest.url(url)
-        return this as Impl
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun method(method: ModelMethod): Impl {
         mRequest.method(method)
-        return this as Impl
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun head(key: String, value: String): Impl {
         mRequest.head(key, value)
-        return this as Impl
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun param(key: String, obj: Any): Impl {
         mRequest.param(key, obj)
-        return this as Impl
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun paramCheckNull(key: String, obj: Any?): Impl {
         mRequest.paramCheckNull(key, obj)
-        return this as Impl
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun addParams(params: Map<String, Any>): Impl {
         mRequest.addParams(params)
-        return this as Impl
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun filler(filler: ModelRequestFiller<Req>): Impl {
         mModelFiller = filler
-        return this as Impl
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun listener(listener: ModelListener<Data>): Impl {
         mSuccessListener = {
             networkResp, response ->
@@ -175,42 +173,50 @@ abstract class AbstractModel<Impl : AbstractModel<Impl, *, *>, Req : AbstractMod
             listener.onError(errorCode, message)
         }
 
-        return this as Impl
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun success(listener: ModelSuccessListener<Data>): Impl {
         mSuccessListener = listener
-        return this as Impl
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun error(listener: ModelErrorListener): Impl {
         mErrorListener = listener
-        return this as Impl
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
-    fun lifeListener(listener: ModelLoadLifeListener<Impl>): Impl {
-        mLoadLifeListener = listener
-        return this as Impl
+    fun lifeListener(listener: ModelLoadLifeListener<Impl, Data>): Impl {
+        mBeforeStartListener = { listener.onLoadStart(it) }
+        mBeforeSuccessListener = { model, networkResponse, response ->
+            listener.onBeforeSuccess(model, networkResponse, response)
+        }
+
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
+    fun beforeStart(listener: ModelBeforeStartListener<Impl>): Impl {
+        mBeforeStartListener = listener
+        return asImpl()
+    }
+
+    fun beforeSuccess(listener: ModelBeforeSuccessListener<Impl, Data>): Impl {
+        mBeforeSuccessListener = listener
+        return asImpl()
+    }
+
     fun fillExtraHeader(fill: Boolean): Impl {
         mRequest.fillExtraHeader(fill)
-        return this as Impl
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun client(client: MajorHttpClient): Impl {
         mHttpClient = client
-        return this as Impl
+        return asImpl()
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun load(): Int {
-        mLoadLifeListener?.invoke(this as Impl)
+        mBeforeStartListener?.invoke(asImpl())
         mModelFiller?.invoke(mRequest)
 
         return loadInternal()
@@ -285,6 +291,7 @@ abstract class AbstractModel<Impl : AbstractModel<Impl, *, *>, Req : AbstractMod
     fun getListener() = ProxyModelListener(mSuccessListener, mErrorListener)
 
     protected fun doSuccess(networkResp: NetworkResp, response: Data?) {
+        mBeforeSuccessListener?.invoke(asImpl(), networkResp, response)
         mSuccessListener?.invoke(networkResp, response)
     }
 
