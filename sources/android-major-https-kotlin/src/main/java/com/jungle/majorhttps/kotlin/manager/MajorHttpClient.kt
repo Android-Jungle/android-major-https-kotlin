@@ -324,6 +324,13 @@ class MajorHttpClient {
             return
         }
 
-        node.mListener?.onError(seqId, CommonError.fromError(error), error.toString())
+        var message: String? = null
+        if (error?.networkResponse != null && error.networkResponse.data != null) {
+            message = String(error.networkResponse.data)
+        } else {
+            message = error.toString()
+        }
+
+        node.mListener?.onError(seqId, CommonError.fromError(error), message)
     }
 }
