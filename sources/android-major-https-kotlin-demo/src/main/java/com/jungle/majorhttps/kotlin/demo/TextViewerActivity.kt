@@ -25,7 +25,6 @@ import android.support.annotation.Nullable
 import android.support.v7.app.AppCompatActivity
 import android.widget.TextView
 
-
 class TextViewerActivity : AppCompatActivity() {
 
     companion object {

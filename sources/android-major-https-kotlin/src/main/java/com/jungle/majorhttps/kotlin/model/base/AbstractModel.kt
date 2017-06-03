@@ -124,7 +124,7 @@ abstract class AbstractModel<Impl : AbstractModel<Impl, *, *>, Req : AbstractMod
 
     @Suppress("UNCHECKED_CAST")
     protected fun asImpl(): Impl {
-        return asImpl()
+        return this as Impl
     }
 
     fun url(url: String): Impl {
